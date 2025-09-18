@@ -1,1 +1,14 @@
-
+{
+  "name": "messenger-gaming-bot",
+  "version": "1.0.0",
+  "description": "A multi-purpose Facebook Messenger bot with gaming, video downloading, and conversational features, built with Node.js.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "mahadi99900",
+  "license": "MIT",
+  "dependencies": {
+    "facebook-chat-api": "^1.8.0"
+  }
+}
