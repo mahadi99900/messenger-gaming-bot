@@ -9,6 +9,7 @@
   "author": "mahadi99900",
   "license": "MIT",
   "dependencies": {
+    "async-mutex": "^0.5.0",
     "facebook-chat-api": "^1.8.0"
   }
 }
