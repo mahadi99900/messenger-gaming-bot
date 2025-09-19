@@ -1,6 +1,4 @@
 const login = require("facebook-chat-api");
-const fs = require("fs");
-const path = require("path");
 const config = require("./config");
 
 // Importing all of our modules
@@ -9,46 +7,46 @@ const handleGeneralCommand = require("./commands.js");
 const handleGameCommand = require("./game.js");
 const handleDownloaderCommand = require("./downloader.js");
 
-// Path to the appstate file
-const appStatePath = path.resolve(__dirname, 'appstate.json');
+function convertCookie(rawCookie) {
+    const appState = [];
+    const cookiePairs = rawCookie.trim().split(';');
+
+    for (const pair of cookiePairs) {
+        if (pair.includes('=')) {
+            const [key, ...valueParts] = pair.trim().split('=');
+            const value = valueParts.join('=');
+            appState.push({
+                key: key,
+                value: value,
+                domain: "facebook.com",
+                path: "/",
+                httpOnly: false,
+                secure: true,
+                expires: null
+            });
+        }
+    }
+    return appState;
+}
 
 console.log("Starting bot...");
 
-// Main login function
-function performLogin() {
-    let credentials;
-    // Check if appstate.json exists
-    if (fs.existsSync(appStatePath)) {
-        console.log("Found appstate.json. Trying to log in with cookies...");
-        credentials = { appState: JSON.parse(fs.readFileSync(appStatePath, 'utf8')) };
-    } else {
-        console.log("No appstate.json found. Trying to log in with email/password...");
-        credentials = { email: config.email, password: config.password };
+try {
+    if (!config.rawCookie || config.rawCookie.includes("আপনার কুকি স্ট্রিংটি এখানে পেস্ট করুন")) {
+        throw new Error("Raw cookie string is missing or not updated in config.js.");
     }
+
+    console.log("Converting raw cookie to appstate format...");
+    const appState = convertCookie(config.rawCookie);
+    const credentials = { appState: appState };
 
     login(credentials, (err, api) => {
         if (err) {
-            // If login with appstate failed, try again with email/password
-            if (credentials.appState) {
-                console.error("Login with appstate failed. Deleting old appstate and trying with password.", err);
-                fs.unlinkSync(appStatePath); // Delete the faulty appstate
-                return performLogin(); // Retry the login process
-            }
-            
-            // If login with email/password fails, it's a real error
-            console.error("Login with email/password failed!", err);
-            if (err.error === 'login-approval') {
-                console.log("!!! IMPORTANT: Login approval needed. Please check your Facebook account for a notification and approve the login. Then, restart the bot.");
-            }
+            console.error("Login failed! Please check if your cookie is valid and not expired.", err);
             return;
         }
 
-        // --- Login Successful ---
         console.log("Login successful! Bot is now listening for messages...");
-
-        // Save the new appstate for future logins
-        fs.writeFileSync(appStatePath, JSON.stringify(api.getAppState(), null, 2));
-        console.log("New appstate.json has been saved for future sessions.");
 
         api.listenMqtt((err, event) => {
             if (err) {
@@ -61,7 +59,7 @@ function performLogin() {
 
             try {
                 if (handleConversationalMessage(api, event)) return;
-                
+
                 if (event.body && event.body.startsWith(config.prefix)) {
                     handleGeneralCommand(api, event, config.prefix);
                     handleGameCommand(api, event, config.prefix);
@@ -73,7 +71,7 @@ function performLogin() {
             }
         });
     });
-}
 
-// Start the whole process
-performLogin();
+} catch (e) {
+    console.error(`[ERROR] ${e.message}`);
+}
