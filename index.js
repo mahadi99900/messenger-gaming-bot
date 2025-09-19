@@ -31,12 +31,11 @@ login({ appState: config.appstate }, (err, api) => {
         try {
             // প্রথমে সাধারণ বার্তা চেক করা হচ্ছে (যেমন: hi, hello)
             if (handleConversationalMessage(api, event)) {
-                return; // বার্তাটি 처리 হয়ে গেলে আর এগোনো হবে না
+                return;
             }
 
             // এরপর কমান্ড চেক করা হচ্ছে
             if (event.body.startsWith(config.prefix)) {
-                // সব কমান্ড হ্যান্ডলারকে পাঠানো হলো
                 handleGeneralCommand(api, event, config.prefix);
                 handleGameCommand(api, event, config.prefix);
                 handleDownloaderCommand(api, event, config.prefix);
