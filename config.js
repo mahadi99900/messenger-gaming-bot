@@ -1,9 +1,9 @@
 module.exports = {
-    // আপনার সঠিক কুকিজটি এখানে বসানো হলো
+    // আপনার নতুন এবং সঠিক কুকিজটি এখানে বসানো হলো
     appstate: [
         {
             "name": "datr",
-            "value": "oZ7NaCeBsY0s13Yv0ukXqqIg",
+            "value": "XaTNaNlPyXjcyWWei_MenxZr",
             "domain": ".facebook.com",
             "hostOnly": false,
             "path": "/",
@@ -13,12 +13,12 @@ module.exports = {
             "session": false,
             "firstPartyDomain": "",
             "partitionKey": null,
-            "expirationDate": 1792865952.236,
+            "expirationDate": 1792867419.882,
             "storeId": null
         },
         {
             "name": "fr",
-            "value": "0FOAQOgPzTjIyr4EF.AWecrs7gph8y9zzs2gb45YzSvnKj_eX4_4-JhoGLvopfFUf-JDk.BozZ6h..AAA.0.0.BozZ7d.AWf6FVimqf_ykNfw-RTCYOwn7qo",
+            "value": "09CvgAL5vQgiKXcJb.AWd_gsRxUp6P_nQ5gI53nlQ5kDvClIiqnO-aeQ4_HrMK5txhkEM.BozaRd..AAA.0.0.BozaR5.AWee7FjTK7me9rMGufU1SNRb_wQ",
             "domain": ".facebook.com",
             "hostOnly": false,
             "path": "/",
@@ -28,12 +28,12 @@ module.exports = {
             "session": false,
             "firstPartyDomain": "",
             "partitionKey": null,
-            "expirationDate": 1766082015.368,
+            "expirationDate": 1766083451.18,
             "storeId": null
         },
         {
             "name": "xs",
-            "value": "43%3AKLIUYiftIph6yg%3A2%3A1758306014%3A-1%3A-1",
+            "value": "12%3AoAZ6lrL48awIfQ%3A2%3A1758307450%3A-1%3A-1",
             "domain": ".facebook.com",
             "hostOnly": false,
             "path": "/",
@@ -43,7 +43,7 @@ module.exports = {
             "session": false,
             "firstPartyDomain": "",
             "partitionKey": null,
-            "expirationDate": 1789842015.368,
+            "expirationDate": 1789843451.18,
             "storeId": null
         },
         {
@@ -72,12 +72,12 @@ module.exports = {
             "session": false,
             "firstPartyDomain": "",
             "partitionKey": null,
-            "expirationDate": 1789842015.368,
+            "expirationDate": 1789843451.18,
             "storeId": null
         },
         {
             "name": "sb",
-            "value": "oZ7NaD9G8Iq4Kc1bb24a86-S",
+            "value": "XaTNaBqWzP0Fs-JppBHZzJ1m",
             "domain": ".facebook.com",
             "hostOnly": false,
             "path": "/",
@@ -87,7 +87,7 @@ module.exports = {
             "session": false,
             "firstPartyDomain": "",
             "partitionKey": null,
-            "expirationDate": 1792866015.368,
+            "expirationDate": 1792867451.18,
             "storeId": null
         },
         {
