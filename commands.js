@@ -3,36 +3,37 @@
 module.exports = function handleCommand(api, event, prefix) {
     const message = event.body;
 
-    // First, check if the message is a command
     if (!message.startsWith(prefix)) {
-        return false; // If not, do nothing
+        return false; // Not a command, do nothing
     }
 
-    // Separate the command from its arguments
     const args = message.slice(prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
 
-    // Now, handle the '/help' command
     if (command === "help") {
-        const helpMessage = `📜 **Here are the main commands for the Battle Nexus Bot:**
+        const helpMessage = `📜 **ব্যাটেল নেক্সাস বটের সকল কমান্ড:**
 
-**Game Commands:**
-• \`${prefix}hunt\` - To hunt for new animals.
-• \`${prefix}zoo\` - To see your zoo.
-• \`${prefix}profile\` - To see your profile.
-• \`${prefix}battle @mention\` - To challenge someone to a battle.
+**--- 🎮 গেমিং কমান্ড ---**
+• \`${prefix}profile\` - আপনার প্রোফাইল দেখুন (লেভেল, এক্সপি, কয়েন)।
+• \`${prefix}hunt\` - নতুন প্রাণী শিকার করুন।
+• \`${prefix}zoo\` - আপনার চিড়িয়াখানায় থাকা সকল প্রাণী দেখুন।
+• \`${prefix}sell <animal_id>\` - নির্দিষ্ট প্রাণী বিক্রি করুন।
+• \`${prefix}claim\` - নির্দিষ্ট সময় পর পর ফ্রি কয়েন সংগ্রহ করুন।
+• \`${prefix}pray\` - আপনার ভাগ্য (Luck) বৃদ্ধি করুন।
+• \`${prefix}battle\` - বটের সাথে যুদ্ধ করুন (PvE)।
+• \`${prefix}battle @mention\` - অন্য খেলোয়াড়ের সাথে যুদ্ধ করুন (PvP)।
+• \`${prefix}give @mention <amount>\` - অন্যকে কয়েন দিন।
+• \`${prefix}slots <amount>\` - স্লট মেশিন খেলে ভাগ্য পরীক্ষা করুন।
+• \`${prefix}leaderboard\` - সবচেয়ে ধনী খেলোয়াড়দের তালিকা দেখুন।
 
-**Utility Commands:**
-• \`${prefix}youtube <video_link>\` - To download a YouTube video.
-• \`${prefix}facebook <video_link>\` - To download a Facebook video.
+**--- 📥 ইউটিলিটি কমান্ড ---**
+• \`${prefix}dl <video_url>\` - যেকোনো ওয়েবসাইট থেকে ভিডিও ডাউনলোড করুন।
 
-Just type the command to use it!`;
+প্রয়োজনীয় কমান্ডটি টাইপ করে পাঠিয়ে দিন!`;
         
         api.sendMessage(helpMessage, event.threadID, event.messageID);
-        return true; // The command was handled
+        return true; // Command was handled
     }
 
-    // We can add more commands like 'hunt', 'zoo' etc. here later.
-
-    return false; // If the command is not recognized
+    return false; // Command not recognized here
 };
