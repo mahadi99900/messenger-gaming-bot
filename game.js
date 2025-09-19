@@ -6,7 +6,7 @@ const HUNT_COOLDOWN = 15; // 15 seconds
 const PRAY_COOLDOWN = 60; // 1 minute
 const CLAIM_COOLDOWN = 300; // 5 minutes
 const CLAIM_AMOUNT = 1000;
-const BATTLE_COIN_REWARD = 100;
+const BATTLE_COIN_REQUIREMENT = 100; // Renamed for clarity
 const PLAYER_XP_FOR_WIN = 50;
 const PLAYER_XP_FOR_LOSS = 10;
 
@@ -71,7 +71,7 @@ module.exports = function handleGameCommand(api, event, prefix) {
             } else if (command === "hunt") {
                 const currentTime = Date.now() / 1000;
                 if (currentTime - (playerData.last_hunt || 0) < HUNT_COOLDOWN) {
-                    return api.sendMessage(`⏳ You are tired. Please wait.`, event.threadID, event.messageID);
+                    return api.sendMessage(`⏳ আপনি ক্লান্ত। অনুগ্রহ করে অপেক্ষা করুন।`, event.threadID, event.messageID);
                 }
                 const foundAnimalBase = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
                 const luck = playerData.luck || 1.0;
@@ -88,106 +88,111 @@ module.exports = function handleGameCommand(api, event, prefix) {
                 playerData.zoo.push(newAnimal);
                 playerData.last_hunt = currentTime;
                 playerData.xp += 15;
-                const huntMessage = `🏞️ You found a [${foundQuality}]-quality **${foundAnimalBase.name}** ${foundAnimalBase.icon}!\n\n💥 Power: ${finalPower}\n⭐ Gained 15 XP.`;
+                const huntMessage = `🏞️ আপনি একটি [${foundQuality}]-মানের **${foundAnimalBase.name}** ${foundAnimalBase.icon} খুঁজে পেয়েছেন!\n\n💥 শক্তি: ${finalPower}\n⭐ ১৫ এক্সপি অর্জিত হয়েছে।`;
                 api.sendMessage(huntMessage, event.threadID, event.messageID);
 
             } else if (command === "zoo") {
-                if (playerData.zoo.length === 0) return api.sendMessage("Your zoo is empty!", event.threadID, event.messageID);
+                if (playerData.zoo.length === 0) return api.sendMessage("আপনার চিড়িয়াখানা খালি!", event.threadID, event.messageID);
                 const totalPower = calculateTotalPower(playerData);
-                let zooMessage = `🐾 **${playerData.name}'s Zoo** 🐾\nTotal Power: ${totalPower}\n\n`;
+                let zooMessage = `🐾 **${playerData.name}-এর চিড়িয়াখানা** 🐾\nমোট শক্তি: ${totalPower}\n\n`;
                 playerData.zoo.sort((a, b) => b.power - a.power);
                 playerData.zoo.forEach(animal => {
-                    zooMessage += `• ${animal.icon} ${animal.name} | Pwr: ${animal.power} | ID: ${animal.uid}\n`;
+                    zooMessage += `• ${animal.icon} ${animal.name} | শক্তি: ${animal.power} | আইডি: ${animal.uid}\n`;
                 });
                 api.sendMessage(zooMessage, event.threadID);
 
             } else if (command === "sell") {
-                if (args.length === 0) return api.sendMessage(`Usage: ${prefix}sell <animal_ID>`, event.threadID, event.messageID);
+                if (args.length === 0) return api.sendMessage(`ব্যবহার: ${prefix}sell <animal_ID>`, event.threadID, event.messageID);
                 const animalUID = args[0];
                 const animalIndex = playerData.zoo.findIndex(a => a.uid === animalUID);
-                if (animalIndex === -1) return api.sendMessage(`❌ No animal found with ID: ${animalUID}`, event.threadID, event.messageID);
+                if (animalIndex === -1) return api.sendMessage(`❌ এই আইডি দিয়ে কোনো প্রাণী খুঁজে পাওয়া যায়নি: ${animalUID}`, event.threadID, event.messageID);
                 const animalToSell = playerData.zoo[animalIndex];
                 const sellPrice = Math.floor(animalToSell.power / 2);
                 playerData.coins += sellPrice;
                 playerData.zoo.splice(animalIndex, 1);
-                api.sendMessage(`✅ Sold ${animalToSell.icon} ${animalToSell.name} for ${sellPrice} coins.`, event.threadID, event.messageID);
+                api.sendMessage(`✅ ${animalToSell.icon} ${animalToSell.name} প্রাণীটি ${sellPrice} কয়েনের বিনিময়ে বিক্রি করা হয়েছে।`, event.threadID, event.messageID);
 
             } else if (command === "claim") {
                 const currentTime = Date.now() / 1000;
                 if (currentTime - (playerData.last_claim || 0) < CLAIM_COOLDOWN) {
-                    return api.sendMessage(`⏳ Please wait for the next claim.`, event.threadID, event.messageID);
+                    return api.sendMessage(`⏳ পরবর্তী ক্লেইমের জন্য অপেক্ষা করুন।`, event.threadID, event.messageID);
                 }
                 playerData.coins += CLAIM_AMOUNT;
                 playerData.last_claim = currentTime;
-                api.sendMessage(`🎉 You claimed ${CLAIM_AMOUNT} coins!`, event.threadID, event.messageID);
+                api.sendMessage(`🎉 আপনি ${CLAIM_AMOUNT} কয়েন সংগ্রহ করেছেন!`, event.threadID, event.messageID);
 
             } else if (command === "pray") {
                 const currentTime = Date.now() / 1000;
                 if (currentTime - (playerData.last_pray || 0) < PRAY_COOLDOWN) {
-                    return api.sendMessage(`🙏 You can pray once a minute.`, event.threadID, event.messageID);
+                    return api.sendMessage(`🙏 আপনি প্রতি মিনিটে একবার প্রার্থনা করতে পারবেন।`, event.threadID, event.messageID);
                 }
                 playerData.luck = (playerData.luck || 1.0) + 0.1;
                 playerData.last_pray = currentTime;
-                api.sendMessage(`Your luck increased to ${playerData.luck.toFixed(2)}.`, event.threadID, event.messageID);
+                api.sendMessage(`আপনার ভাগ্য বেড়ে ${playerData.luck.toFixed(2)} হয়েছে।`, event.threadID, event.messageID);
 
             } else if (command === "give") {
                 const recipientID = Object.keys(event.mentions)[0];
                 const amount = parseInt(args[1], 10);
-                if (!recipientID || !amount || amount <= 0) return api.sendMessage(`Usage: ${prefix}give @mention <amount>`, event.threadID, event.messageID);
-                if (playerData.coins < amount) return api.sendMessage("❌ Not enough coins.", event.threadID, event.messageID);
+                if (!recipientID || !amount || amount <= 0) return api.sendMessage(`ব্যবহার: ${prefix}give @mention <amount>`, event.threadID, event.messageID);
+                if (playerData.coins < amount) return api.sendMessage("❌ আপনার কাছে পর্যাপ্ত কয়েন নেই।", event.threadID, event.messageID);
+                if (!data[recipientID]) return api.sendMessage("❌ এই খেলোয়াড়কে খুঁজে পাওয়া যায়নি।", event.threadID, event.messageID);
                 const recipientData = data[recipientID];
-                if (!recipientData) return api.sendMessage("❌ Player not found.", event.threadID, event.messageID);
                 
                 playerData.coins -= amount;
                 recipientData.coins += amount;
-                api.sendMessage(`✅ Sent ${amount} coins to ${recipientData.name}.`, event.threadID, event.messageID);
+                api.sendMessage(`✅ ${recipientData.name}-কে ${amount} কয়েন পাঠানো হয়েছে।`, event.threadID, event.messageID);
                 
             } else if (command === "leaderboard") {
                 const sortedPlayers = Object.values(data).sort((a, b) => b.coins - a.coins);
-                let lbMessage = "🏆 **Richest Players Leaderboard** 🏆\n\n";
+                let lbMessage = "🏆 **সবচেয়ে ধনী খেলোয়াড়দের তালিকা** 🏆\n\n";
                 sortedPlayers.slice(0, 10).forEach((p, i) => {
-                    lbMessage += `${i + 1}. ${p.name} - ${p.coins} coins\n`;
+                    lbMessage += `${i + 1}. ${p.name} - ${p.coins} কয়েন\n`;
                 });
                 api.sendMessage(lbMessage, event.threadID);
             
             } else if (command === "battle") {
                 const opponentID = Object.keys(event.mentions)[0];
-                if (opponentID) { // PvP
+                if (opponentID) { // PvP Battle
+                    if (!data[opponentID]) return api.sendMessage("এই খেলোয়াড় এখনও গেমটি শুরু করেনি।", event.threadID, event.messageID);
                     const opponentData = data[opponentID];
-                    if (!opponentData) return api.sendMessage("This player hasn't started the game.", event.threadID, event.messageID);
-                    if (playerData.coins < BATTLE_COIN_REWARD) return api.sendMessage(`You need ${BATTLE_COIN_REWARD} coins for a PvP battle.`, event.threadID, event.messageID);
+                    
+                    // *** முக்கிய மாற்றம் এখানে ***
+                    if (playerData.coins < BATTLE_COIN_REQUIREMENT) return api.sendMessage(`PvP যুদ্ধের জন্য আপনার ${BATTLE_COIN_REQUIREMENT} কয়েন প্রয়োজন।`, event.threadID, event.messageID);
+                    if (opponentData.coins < BATTLE_COIN_REQUIREMENT) return api.sendMessage(`আপনার প্রতিপক্ষের কাছে PvP যুদ্ধের জন্য পর্যাপ্ত (${BATTLE_COIN_REQUIREMENT}) কয়েন নেই।`, event.threadID, event.messageID);
                     
                     const playerPower = calculateTotalPower(playerData);
                     const opponentPower = calculateTotalPower(opponentData);
-                    let resultMessage = `⚔️ **Battle Result** ⚔️\n\n${playerData.name}'s Power: ${playerPower}\n${opponentData.name}'s Power: ${opponentPower}\n\n`;
+                    let resultMessage = `⚔️ **যুদ্ধের ফলাফল** ⚔️\n\n${playerData.name}-এর শক্তি: ${playerPower}\n${opponentData.name}-এর শক্তি: ${opponentPower}\n\n`;
+                    
                     if (playerPower >= opponentPower) {
-                        playerData.coins += BATTLE_COIN_REWARD; opponentData.coins -= BATTLE_COIN_REWARD;
+                        playerData.coins += BATTLE_COIN_REQUIREMENT; opponentData.coins -= BATTLE_COIN_REQUIREMENT;
                         playerData.xp += PLAYER_XP_FOR_WIN; opponentData.xp += PLAYER_XP_FOR_LOSS;
-                        resultMessage += `🎉 **${playerData.name} wins!**`;
+                        resultMessage += `🎉 **${playerData.name} বিজয়ী!**`;
                     } else {
-                        opponentData.coins += BATTLE_COIN_REWARD; playerData.coins -= BATTLE_COIN_REWARD;
+                        opponentData.coins += BATTLE_COIN_REQUIREMENT; playerData.coins -= BATTLE_COIN_REQUIREMENT;
                         opponentData.xp += PLAYER_XP_FOR_WIN; playerData.xp += PLAYER_XP_FOR_LOSS;
-                        resultMessage += `🎉 **${opponentData.name} wins!**`;
+                        resultMessage += `🎉 **${opponentData.name} বিজয়ী!**`;
                     }
                     api.sendMessage(resultMessage, event.threadID);
-                } else { // PvE
+
+                } else { // PvE Battle
                     const playerPower = calculateTotalPower(playerData);
-                    if (playerPower === 0) return api.sendMessage("You have no animals to battle with!", event.threadID, event.messageID);
+                    if (playerPower === 0) return api.sendMessage("যুদ্ধ করার জন্য আপনার কোনো প্রাণী নেই!", event.threadID, event.messageID);
                     const botPower = Math.floor(playerPower * (Math.random() * (1.3 - 0.7) + 0.7));
-                    let resultMessage = `⚔️ **Battle vs. Bot** ⚔️\n\nYour Power: ${playerPower}\nBot's Power: ${botPower}\n\n`;
+                    let resultMessage = `⚔️ **বটের সাথে যুদ্ধ** ⚔️\n\nআপনার শক্তি: ${playerPower}\nবটের শক্তি: ${botPower}\n\n`;
                     if (playerPower >= botPower) {
                         playerData.xp += 25;
-                        resultMessage += `🎉 **YOU WON!** You gained 25 XP.`;
+                        resultMessage += `🎉 **আপনি জিতেছেন!** আপনি ২৫ এক্সপি পেয়েছেন।`;
                     } else {
-                        resultMessage += `💔 **YOU LOST!** Try getting stronger!`;
+                        resultMessage += `💔 **আপনি হেরে গেছেন!** আরও শক্তিশালী হওয়ার চেষ্টা করুন!`;
                     }
                     api.sendMessage(resultMessage, event.threadID, event.messageID);
                 }
 
             } else if (command === "slots" || command === "bet") {
                 const amount = parseInt(args[0], 10);
-                if (!amount || amount <= 0) return api.sendMessage(`Usage: ${prefix}${command} <amount>`, event.threadID, event.messageID);
-                if (playerData.coins < amount) return api.sendMessage("❌ Not enough coins.", event.threadID, event.messageID);
+                if (!amount || amount <= 0) return api.sendMessage(`ব্যবহার: ${prefix}${command} <amount>`, event.threadID, event.messageID);
+                if (playerData.coins < amount) return api.sendMessage("❌ আপনার কাছে পর্যাপ্ত কয়েন নেই।", event.threadID, event.messageID);
                 
                 playerData.coins -= amount;
                 const emojis = ['🍒', '🍊', '🍋', '🔔', '💎', '💰'];
@@ -198,25 +203,25 @@ module.exports = function handleGameCommand(api, event, prefix) {
 
                 if (results[0] === results[1] && results[1] === results[2]) {
                     winnings = amount * 10;
-                    outcomeMessage = `🎊 JACKPOT! You won ${winnings} coins!`;
+                    outcomeMessage = `🎊 জ্যাকপট! আপনি ${winnings} কয়েন জিতেছেন!`;
                 } else if (results[0] === results[1] || results[1] === results[2]) {
                     winnings = amount * 2;
-                    outcomeMessage = `🎉 Small Win! You won ${winnings} coins!`;
+                    outcomeMessage = `🎉 ছোট জয়! আপনি ${winnings} কয়েন জিতেছেন!`;
                 } else {
-                    outcomeMessage = "💔 You lost!";
+                    outcomeMessage = "💔 আপনি হেরে গেছেন!";
                 }
 
                 if (winnings > 0) playerData.coins += winnings;
 
-                api.sendMessage(`🎰 You bet ${amount}...\n| ${results.join(' | ')} |\n\n${outcomeMessage}`, event.threadID, event.messageID);
+                api.sendMessage(`🎰 আপনি ${amount} বাজি ধরেছেন...\n| ${results.join(' | ')} |\n\n${outcomeMessage}`, event.threadID, event.messageID);
             }
 
             // Save data after any command that modifies player data
             await db.saveData(data);
 
         } catch (e) {
-            console.error("An error occurred in command handler:", e);
-            api.sendMessage("😥 Oops! Something went wrong.", event.threadID);
+            console.error("An error occurred in game command handler:", e);
+            api.sendMessage("😥 দুঃখিত! গেম কমান্ডে একটি সমস্যা হয়েছে।", event.threadID);
         }
     });
 };
