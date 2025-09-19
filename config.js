@@ -6,7 +6,7 @@ module.exports = {
     
     // --- BOT ADMIN ---
     // Your own Facebook User ID for admin commands.
-    adminID: "YOUR_FACEBOOK_USER_ID_HERE",
+    adminID: "100052951819398",
 
     // --- BOT SETTINGS ---
     // The prefix for bot commands.
