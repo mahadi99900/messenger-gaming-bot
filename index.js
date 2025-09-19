@@ -7,42 +7,16 @@ const handleGeneralCommand = require("./commands.js");
 const handleGameCommand = require("./game.js");
 const handleDownloaderCommand = require("./downloader.js");
 
-function convertCookie(rawCookie) {
-    const appState = [];
-    const cookiePairs = rawCookie.trim().split(';');
-
-    for (const pair of cookiePairs) {
-        if (pair.includes('=')) {
-            const [key, ...valueParts] = pair.trim().split('=');
-            const value = valueParts.join('=');
-            appState.push({
-                key: key,
-                value: value,
-                domain: "facebook.com",
-                path: "/",
-                httpOnly: false,
-                secure: true,
-                expires: null
-            });
-        }
-    }
-    return appState;
-}
-
 console.log("Starting bot...");
 
 try {
-    if (!config.rawCookie || config.rawCookie.includes("আপনার কুকি স্ট্রিংটি এখানে পেস্ট করুন")) {
-        throw new Error("Raw cookie string is missing or not updated in config.js.");
+    if (!config.appstate) {
+        throw new Error("Appstate is missing in config.js. Please add your appstate.");
     }
 
-    console.log("Converting raw cookie to appstate format...");
-    const appState = convertCookie(config.rawCookie);
-    const credentials = { appState: appState };
-
-    login(credentials, (err, api) => {
+    login({ appState: config.appstate }, (err, api) => {
         if (err) {
-            console.error("Login failed! Please check if your cookie is valid and not expired.", err);
+            console.error("Login failed! The appstate might be invalid or expired.", err);
             return;
         }
 
@@ -67,7 +41,6 @@ try {
                 }
             } catch (e) {
                 console.error("An error occurred while handling a message:", e);
-                api.sendMessage("😥 Oops! Something went wrong on my end.", event.threadID);
             }
         });
     });
