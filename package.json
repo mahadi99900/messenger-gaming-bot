@@ -1,7 +1,7 @@
 {
   "name": "messenger-gaming-bot",
   "version": "1.0.0",
-  "description": "A multi-purpose Facebook Messenger bot with gaming, video downloading, and conversational features, built with Node.js.",
+  "description": "A multi-purpose Facebook Messenger bot with gaming and utility features.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -11,6 +11,6 @@
   "dependencies": {
     "async-mutex": "^0.5.0",
     "facebook-chat-api": "^1.8.0",
-    "yt-dlp-exec": "^2.5.2"
+    "yt-dlp-exec": "latest"
   }
 }
