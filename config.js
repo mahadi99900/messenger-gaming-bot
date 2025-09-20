@@ -1,9 +1,10 @@
 module.exports = {
-    // আপনার নতুন এবং সঠিক কুকিজটি এখানে বসানো হলো
+    // --- ফেসবুক কুকিজ ---
+    // আপনার নতুন কুকিজ এখানে বসানো হয়েছে
     appstate: [
     {
         "name": "datr",
-        "value": "uUrOaCl76KjD7a2qXY72tsll",
+        "value": "0lPOaLqP8-KxHCEoNlcWALia",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -13,12 +14,12 @@ module.exports = {
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1792910008.622,
+        "expirationDate": 1792912337.497,
         "storeId": null
     },
     {
         "name": "fr",
-        "value": "0CtmH3UI5GXokefbu.AWdSx2tMnbh5de-NwRxmLZoGV9twRe--T5_YJhIoVGD1UI_sCoE.Bozkq5..AAA.0.0.Bozkrb.AWeDY-iSEXd2j8mhXge12y4ya8s",
+        "value": "1hgkjshhL8JB9hH1p.AWeM_ju7SAL9Qu1jRf2dOUNzfoXBDzg-59lzueMmhQlmWrqO7RQ.BozlT-..AAA.0.0.BozlUe.AWdrcnGioi7s1vyGcc279-S3LLA",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -28,12 +29,12 @@ module.exports = {
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1766126044.813,
+        "expirationDate": 1766128668.78,
         "storeId": null
     },
     {
         "name": "xs",
-        "value": "5%3AWczrnjwtDSwnvw%3A2%3A1758350044%3A-1%3A-1",
+        "value": "28%3AChOlEXBit_pkaA%3A2%3A1758352613%3A-1%3A-1%3A%3AAcWLEzY7jWr4egGoeZYf-0XZcv_pR0t1JkU9sWjH6A",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -43,7 +44,7 @@ module.exports = {
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1789886044.813,
+        "expirationDate": 1789888637.459,
         "storeId": null
     },
     {
@@ -62,7 +63,7 @@ module.exports = {
     },
     {
         "name": "c_user",
-        "value": "61578564513586",
+        "value": "61581294953813",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -72,27 +73,12 @@ module.exports = {
         "session": false,
         "firstPartyDomain": "",
         "partitionKey": null,
-        "expirationDate": 1789886044.813,
+        "expirationDate": 1789888637.459,
         "storeId": null
     },
     {
-        "name": "sb",
-        "value": "uUrOaBsoerQjYMP2XOtYMSDn",
-        "domain": ".facebook.com",
-        "hostOnly": false,
-        "path": "/",
-        "secure": true,
-        "httpOnly": true,
-        "sameSite": "no_restriction",
-        "session": false,
-        "firstPartyDomain": "",
-        "partitionKey": null,
-        "expirationDate": 1792910044.813,
-        "storeId": null
-    },
-    {
-        "name": "wd",
-        "value": "360x806",
+        "name": "presence",
+        "value": "C%7B%22t3%22%3A%5B%5D%2C%22utc3%22%3A1758352676249%2C%22v%22%3A1%7D",
         "domain": ".facebook.com",
         "hostOnly": false,
         "path": "/",
@@ -103,12 +89,57 @@ module.exports = {
         "firstPartyDomain": "",
         "partitionKey": null,
         "storeId": null
+    },
+    {
+        "name": "dpr",
+        "value": "2",
+        "domain": ".facebook.com",
+        "hostOnly": false,
+        "path": "/",
+        "secure": true,
+        "httpOnly": false,
+        "sameSite": "no_restriction",
+        "session": false,
+        "firstPartyDomain": "",
+        "partitionKey": null,
+        "expirationDate": 1758957161,
+        "storeId": null
+    },
+    {
+        "name": "sb",
+        "value": "0lPOaMLklq_OtKx_K8ZqOZsF",
+        "domain": ".facebook.com",
+        "hostOnly": false,
+        "path": "/",
+        "secure": true,
+        "httpOnly": true,
+        "sameSite": "no_restriction",
+        "session": false,
+        "firstPartyDomain": "",
+        "partitionKey": null,
+        "expirationDate": 1792912613.578,
+        "storeId": null
+    },
+    {
+        "name": "wd",
+        "value": "980x1942",
+        "domain": ".facebook.com",
+        "hostOnly": false,
+        "path": "/",
+        "secure": true,
+        "httpOnly": false,
+        "sameSite": "lax",
+        "session": false,
+        "firstPartyDomain": "",
+        "partitionKey": null,
+        "expirationDate": 1758957475,
+        "storeId": null
     }
 ],
 
     // --- বট অ্যাডমিন ---
-    // এখানে আপনার ফেসবুক ইউজার আইডি বসান
-    adminID: "YOUR_FACEBOOK_USER_ID_HERE", // <-- এই জায়গায় আপনার ফেসবুক আইডি বসাতে ভুলবেন না
+    // এখানে আপনার নতুন ফেসবুক আইডির ইউজার আইডি বসান (ঐচ্ছিক)
+    adminID: "YOUR_FACEBOOK_USER_ID_HERE",
 
     // --- বট সেটিংস ---
     prefix: "/",
