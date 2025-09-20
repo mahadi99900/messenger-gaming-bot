@@ -1,48 +1,72 @@
-const login = require("fca-unofficial");
-const config = require("./config");
+// index.js
 
-// আপনার সকল মডিউল এখানে নিয়ে আসা হলো
+// --- Core Dependencies ---
+const login = require("fca-unofficial");
+const config = require("./config.js");
+
+// --- Module Imports ---
+// Bringing in all the separate modules for handling different types of messages.
 const handleConversationalMessage = require("./messages.js");
 const handleGeneralCommand = require("./commands.js");
 const handleGameCommand = require("./game.js");
 const handleDownloaderCommand = require("./downloader.js");
 
-console.log("বট চালু হচ্ছে...");
+// --- Bot Initialization ---
+console.log("Starting the bot...");
 
 login({ appState: config.appstate }, (err, api) => {
+    // This is the login function. It uses the appstate from config.js.
+    
     if (err) {
-        console.error("লগইন ব্যর্থ হয়েছে! আপনার appstate মেয়াদোত্তীর্ণ বা ভুল হতে পারে।", err);
-        return;
+        // If login fails, this block will run.
+        console.error("Login failed! Your appstate might be expired or incorrect.", err);
+        // We log the detailed error 'err' to the console to help find the exact problem.
+        return; // Stop the script if login is unsuccessful.
     }
 
-    console.log("লগইন সফল হয়েছে! বট এখন বার্তা শোনার জন্য প্রস্তুত...");
+    console.log(`Login successful! Logged in as User ID: ${api.getCurrentUserID()}. Bot is now listening for messages...`);
 
+    // --- Message Listener ---
+    // api.listenMqtt is the core function that listens for new events (messages, reactions, etc.).
     api.listenMqtt((err, event) => {
         if (err) {
-            console.error("ত্রুটি:", err);
+            // This handles errors with the connection to Facebook's servers.
+            console.error("An error occurred while listening for messages:", err);
             return;
         }
 
-        // অপ্রয়োজনীয় ইভেন্টগুলো বাদ দেওয়া হলো
+        // --- Event Filtering ---
+        // We check if the event is a valid message that the bot should process.
+        // It ignores empty messages, events that aren't messages, and messages sent by the bot itself.
         if (!event.body || (event.type !== "message" && event.type !== "message_reply") || event.senderID === api.getCurrentUserID()) {
-            return;
+            return; // Ignore these events.
         }
 
+        // --- Message Handling Logic ---
         try {
-            // প্রথমে সাধারণ বার্তা চেক করা হচ্ছে (যেমন: hi, hello)
-            if (handleConversationalMessage(api, event)) {
+            console.log(`Received message from: ${event.senderID} in thread: ${event.threadID}`);
+
+            // 1. First, check for conversational messages (like 'hi', 'hello').
+            // If a conversational message is found and handled, we stop further processing.
+            const conversationalMessageHandled = handleConversationalMessage(api, event);
+            if (conversationalMessageHandled) {
                 return;
             }
 
-            // এরপর কমান্ড চেক করা হচ্ছে
+            // 2. If it's not a conversational message, check if it's a command.
+            // A command must start with the prefix defined in config.js.
             if (event.body.startsWith(config.prefix)) {
-                handleGeneralCommand(api, event, config.prefix);
-                handleGameCommand(api, event, config.prefix);
-                handleDownloaderCommand(api, event, config.prefix);
+                // If it's a command, pass it to all command handlers.
+                // Each handler will check if the command belongs to it.
+                handleGeneralCommand(api, event, config.prefix); // For help, etc.
+                handleGameCommand(api, event, config.prefix);      // For hunt, profile, battle, etc.
+                handleDownloaderCommand(api, event, config.prefix); // For dl, youtube, etc.
             }
+
         } catch (e) {
-            console.error("বার্তা পরিচালনা করার সময় একটি ত্রুটি ঘটেছে:", e);
-            api.sendMessage("একটি অপ্রত্যাশিত ত্রুটি ঘটেছে।", event.threadID);
+            // This is a safety net. If any of the handlers crash, this will catch the error.
+            console.error("A critical error occurred while handling a message:", e);
+            api.sendMessage("An unexpected error occurred. Please try again later.", event.threadID);
         }
     });
 });
