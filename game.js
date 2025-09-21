@@ -1,15 +1,6 @@
 // game.js
 const db = require("./database.js");
 
-// --- Game Constants ---
-const HUNT_COOLDOWN = 15; // 15 seconds
-const PRAY_COOLDOWN = 60; // 1 minute
-const CLAIM_COOLDOWN = 300; // 5 minutes
-const CLAIM_AMOUNT = 1000;
-const BATTLE_COIN_REQUIREMENT = 100; // Renamed for clarity
-const PLAYER_XP_FOR_WIN = 50;
-const PLAYER_XP_FOR_LOSS = 10;
-
 const ANIMALS = [
     { name: 'Frog', icon: '🐸', base_power: 4 }, { name: 'Mouse', icon: '🐁', base_power: 5 },
     { name: 'Chicken', icon: '🐔', base_power: 6 }, { name: 'Rabbit', icon: '🐇', base_power: 8 },
@@ -27,7 +18,6 @@ const ANIMALS = [
 ];
 const ANIMAL_QUALITIES = { 'F': 0.5, 'D': 0.8, 'C': 1.0, 'B': 1.2, 'A': 1.5, 'S': 2.0 };
 
-// --- Helper Functions ---
 function calculateTotalPower(playerData) {
     if (!playerData || !playerData.zoo || playerData.zoo.length === 0) return 0;
     return playerData.zoo.reduce((total, animal) => total + (animal.power || 0), 0);
@@ -37,9 +27,9 @@ function calculateLevel(xp) {
     return Math.floor(Math.sqrt(xp / 100)) + 1;
 }
 
-// --- Main Command Handler ---
-module.exports = function handleGameCommand(api, event, prefix) {
+module.exports = function handleGameCommand(api, event, config) {
     const senderID = event.senderID;
+    const prefix = config.PREFIX; // config থেকে প্রিফিক্স নেওয়া হচ্ছে
     
     api.getUserInfo(senderID, async (err, ret) => {
         if (err) return console.error(err);
@@ -54,8 +44,10 @@ module.exports = function handleGameCommand(api, event, prefix) {
         
         const data = db.loadData();
         const playerData = data[senderID];
+        
+        // config.json থেকে গেমের সেটিংস লোড করা
+        const gameSettings = config.gameSettings;
 
-        // --- COMMAND ROUTER ---
         try {
             if (command === "profile") {
                 const totalPower = calculateTotalPower(playerData);
@@ -70,7 +62,7 @@ module.exports = function handleGameCommand(api, event, prefix) {
 
             } else if (command === "hunt") {
                 const currentTime = Date.now() / 1000;
-                if (currentTime - (playerData.last_hunt || 0) < HUNT_COOLDOWN) {
+                if (currentTime - (playerData.last_hunt || 0) < gameSettings.huntCooldown) {
                     return api.sendMessage(`⏳ আপনি ক্লান্ত। অনুগ্রহ করে অপেক্ষা করুন।`, event.threadID, event.messageID);
                 }
                 const foundAnimalBase = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
@@ -114,16 +106,16 @@ module.exports = function handleGameCommand(api, event, prefix) {
 
             } else if (command === "claim") {
                 const currentTime = Date.now() / 1000;
-                if (currentTime - (playerData.last_claim || 0) < CLAIM_COOLDOWN) {
+                if (currentTime - (playerData.last_claim || 0) < gameSettings.claimCooldown) {
                     return api.sendMessage(`⏳ পরবর্তী ক্লেইমের জন্য অপেক্ষা করুন।`, event.threadID, event.messageID);
                 }
-                playerData.coins += CLAIM_AMOUNT;
+                playerData.coins += gameSettings.claimAmount;
                 playerData.last_claim = currentTime;
-                api.sendMessage(`🎉 আপনি ${CLAIM_AMOUNT} কয়েন সংগ্রহ করেছেন!`, event.threadID, event.messageID);
+                api.sendMessage(`🎉 আপনি ${gameSettings.claimAmount} কয়েন সংগ্রহ করেছেন!`, event.threadID, event.messageID);
 
             } else if (command === "pray") {
                 const currentTime = Date.now() / 1000;
-                if (currentTime - (playerData.last_pray || 0) < PRAY_COOLDOWN) {
+                if (currentTime - (playerData.last_pray || 0) < gameSettings.prayCooldown) {
                     return api.sendMessage(`🙏 আপনি প্রতি মিনিটে একবার প্রার্থনা করতে পারবেন।`, event.threadID, event.messageID);
                 }
                 playerData.luck = (playerData.luck || 1.0) + 0.1;
@@ -152,39 +144,38 @@ module.exports = function handleGameCommand(api, event, prefix) {
             
             } else if (command === "battle") {
                 const opponentID = Object.keys(event.mentions)[0];
-                if (opponentID) { // PvP Battle
+                if (opponentID) { 
                     if (!data[opponentID]) return api.sendMessage("এই খেলোয়াড় এখনও গেমটি শুরু করেনি।", event.threadID, event.messageID);
                     const opponentData = data[opponentID];
                     
-                    // *** முக்கிய மாற்றம் এখানে ***
-                    if (playerData.coins < BATTLE_COIN_REQUIREMENT) return api.sendMessage(`PvP যুদ্ধের জন্য আপনার ${BATTLE_COIN_REQUIREMENT} কয়েন প্রয়োজন।`, event.threadID, event.messageID);
-                    if (opponentData.coins < BATTLE_COIN_REQUIREMENT) return api.sendMessage(`আপনার প্রতিপক্ষের কাছে PvP যুদ্ধের জন্য পর্যাপ্ত (${BATTLE_COIN_REQUIREMENT}) কয়েন নেই।`, event.threadID, event.messageID);
+                    if (playerData.coins < gameSettings.battleCoinRequirement) return api.sendMessage(`PvP যুদ্ধের জন্য আপনার ${gameSettings.battleCoinRequirement} কয়েন প্রয়োজন।`, event.threadID, event.messageID);
+                    if (opponentData.coins < gameSettings.battleCoinRequirement) return api.sendMessage(`আপনার প্রতিপক্ষের কাছে PvP যুদ্ধের জন্য পর্যাপ্ত (${gameSettings.battleCoinRequirement}) কয়েন নেই।`, event.threadID, event.messageID);
                     
                     const playerPower = calculateTotalPower(playerData);
                     const opponentPower = calculateTotalPower(opponentData);
                     let resultMessage = `⚔️ **যুদ্ধের ফলাফল** ⚔️\n\n${playerData.name}-এর শক্তি: ${playerPower}\n${opponentData.name}-এর শক্তি: ${opponentPower}\n\n`;
                     
                     if (playerPower >= opponentPower) {
-                        playerData.coins += BATTLE_COIN_REQUIREMENT; opponentData.coins -= BATTLE_COIN_REQUIREMENT;
-                        playerData.xp += PLAYER_XP_FOR_WIN; opponentData.xp += PLAYER_XP_FOR_LOSS;
+                        playerData.coins += gameSettings.battleCoinRequirement; opponentData.coins -= gameSettings.battleCoinRequirement;
+                        playerData.xp += gameSettings.playerXpForWin; opponentData.xp += gameSettings.playerXpForLoss;
                         resultMessage += `🎉 **${playerData.name} বিজয়ী!**`;
                     } else {
-                        opponentData.coins += BATTLE_COIN_REQUIREMENT; playerData.coins -= BATTLE_COIN_REQUIREMENT;
-                        opponentData.xp += PLAYER_XP_FOR_WIN; playerData.xp += PLAYER_XP_FOR_LOSS;
+                        opponentData.coins += gameSettings.battleCoinRequirement; playerData.coins -= gameSettings.battleCoinRequirement;
+                        opponentData.xp += gameSettings.playerXpForWin; playerData.xp += gameSettings.playerXpForLoss;
                         resultMessage += `🎉 **${opponentData.name} বিজয়ী!**`;
                     }
                     api.sendMessage(resultMessage, event.threadID);
 
-                } else { // PvE Battle
+                } else { 
                     const playerPower = calculateTotalPower(playerData);
                     if (playerPower === 0) return api.sendMessage("যুদ্ধ করার জন্য আপনার কোনো প্রাণী নেই!", event.threadID, event.messageID);
                     const botPower = Math.floor(playerPower * (Math.random() * (1.3 - 0.7) + 0.7));
                     let resultMessage = `⚔️ **বটের সাথে যুদ্ধ** ⚔️\n\nআপনার শক্তি: ${playerPower}\nবটের শক্তি: ${botPower}\n\n`;
                     if (playerPower >= botPower) {
-                        playerData.xp += 25;
-                        resultMessage += `🎉 **আপনি জিতেছেন!** আপনি ২৫ এক্সপি পেয়েছেন।`;
+                        playerData.xp += gameSettings.pveXpForWin;
+                        resultMessage += `🎉 **আপনি জিতেছেন!** আপনি ${gameSettings.pveXpForWin} এক্সপি পেয়েছেন।`;
                     } else {
-                        resultMessage += `💔 **আপনি হেরে গেছেন!** আরও শক্তিশালী হওয়ার চেষ্টা করুন!`;
+                        resultMessage += `💔 **আপনি হেরে গেছেন!**`;
                     }
                     api.sendMessage(resultMessage, event.threadID, event.messageID);
                 }
@@ -216,11 +207,10 @@ module.exports = function handleGameCommand(api, event, prefix) {
                 api.sendMessage(`🎰 আপনি ${amount} বাজি ধরেছেন...\n| ${results.join(' | ')} |\n\n${outcomeMessage}`, event.threadID, event.messageID);
             }
 
-            // Save data after any command that modifies player data
             await db.saveData(data);
 
         } catch (e) {
-            console.error("An error occurred in game command handler:", e);
+            console.error("গেম কমান্ড হ্যান্ডলারে একটি সমস্যা হয়েছে:", e);
             api.sendMessage("😥 দুঃখিত! গেম কমান্ডে একটি সমস্যা হয়েছে।", event.threadID);
         }
     });
