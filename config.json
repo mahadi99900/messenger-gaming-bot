@@ -1,1 +1,24 @@
 
+{
+    "BOTNAME": "Battle Nexus Bot",
+    "PREFIX": "/",
+    "APPSTATEPATH": "appstate.json",
+    "FCAOption": {
+        "forceLogin": true,
+        "listenEvents": true,
+        "pauseLog": true,
+        "logLevel": "error",
+        "selfListen": false,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
+    },
+    "gameSettings": {
+        "huntCooldown": 15,
+        "prayCooldown": 60,
+        "claimCooldown": 300,
+        "claimAmount": 1000,
+        "battleCoinRequirement": 100,
+        "playerXpForWin": 50,
+        "playerXpForLoss": 10,
+        "pveXpForWin": 25
+    }
+}
