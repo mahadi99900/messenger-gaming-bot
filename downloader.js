@@ -1,72 +1,70 @@
-// This file handles video downloading from various websites.
+// downloader.js
 
 const fs = require('fs');
 const path = require('path');
 const ytDlpExec = require('yt-dlp-exec');
 
-// A lock to prevent multiple simultaneous downloads, which can crash the bot.
 let isDownloading = false;
 
-module.exports = async function handleDownloaderCommand(api, event, prefix) {
+module.exports = async function handleDownloaderCommand(api, event, config) {
     const message = event.body;
+    const prefix = config.PREFIX; // config থেকে প্রিফিক্স নেওয়া হচ্ছে
+
     if (!message.startsWith(prefix)) return;
 
     const args = message.slice(prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
 
-    // We can use 'dl' or specific commands like 'youtube', 'facebook', etc.
     if (command === "dl" || command === "youtube" || command === "facebook") {
         if (isDownloading) {
-            api.sendMessage("Another download is already in progress. Please wait.", event.threadID, event.messageID);
+            api.sendMessage("আরেকটি ডাউনলোড চলছে। অনুগ্রহ করে অপেক্ষা করুন।", event.threadID, event.messageID);
             return;
         }
 
         const url = args[0];
         if (!url) {
-            api.sendMessage(`Usage: ${prefix}dl <video_url>`, event.threadID, event.messageID);
+            api.sendMessage(`ব্যবহার: ${prefix}dl <video_url>`, event.threadID, event.messageID);
             return;
         }
 
         isDownloading = true;
-        const replyMsg = await api.sendMessage("📥 Starting download, please wait...", event.threadID, event.messageID);
+        const replyMsg = await api.sendMessage("📥 ডাউনলোড শুরু হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...", event.threadID, event.messageID);
         
-        const output_template = `${Date.now()}.%(ext)s`;
+        const output_template = path.join(__dirname, `${Date.now()}.%(ext)s`);
         let videoFilePath = '';
 
         try {
-            console.log(`Downloading from URL: ${url}`);
-            
-            // Execute yt-dlp to download the video
-            const res = await ytDlpExec(url, {
+            await ytDlpExec(url, {
                 output: output_template,
                 format: 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-                maxFilesize: '50m' // Limit download size to 50MB to avoid server crash
+                maxFilesize: '50m'
             });
-            
-            videoFilePath = path.join(__dirname, res.stdout.trim().split('\n').pop());
-            console.log(`Downloaded successfully. File path: ${videoFilePath}`);
-            
-            await api.editMessage("✅ Download complete! Now uploading to you...", replyMsg.messageID);
 
-            // Send the downloaded video as an attachment
+            // Find the downloaded file
+            const files = fs.readdirSync(__dirname);
+            const downloadedFile = files.find(file => file.startsWith(path.basename(output_template, '.%(ext)s')));
+            
+            if (!downloadedFile) {
+                throw new Error("ডাউনলোড করা ফাইল খুঁজে পাওয়া যায়নি।");
+            }
+            videoFilePath = path.join(__dirname, downloadedFile);
+
+            await api.editMessage("✅ ডাউনলোড সম্পন্ন! এখন আপলোড করা হচ্ছে...", replyMsg.messageID);
+
             await api.sendMessage({
-                body: "Here is your video!",
+                body: "আপনার ভিডিও!",
                 attachment: fs.createReadStream(videoFilePath)
-            }, event.threadID, event.messageID);
+            }, event.threadID);
 
         } catch (error) {
-            console.error("Download Error:", error);
-            api.sendMessage(`❌ Sorry, an error occurred.\n\nError: ${error.message.split('\n')[1] || 'Unknown error'}`, event.threadID, event.messageID);
+            console.error("ডাউনলোড ত্রুটি:", error);
+            api.sendMessage(`❌ দুঃখিত, একটি ত্রুটি ঘটেছে।`, event.threadID, event.messageID);
         
         } finally {
-            // Clean up: delete the video file from the server after sending
             if (videoFilePath && fs.existsSync(videoFilePath)) {
                 fs.unlinkSync(videoFilePath);
-                console.log(`Cleaned up file: ${videoFilePath}`);
             }
-            // Release the lock
             isDownloading = false;
-            // Delete the "Downloading..." message
             if (replyMsg) {
                 await api.unsendMessage(replyMsg.messageID);
             }
